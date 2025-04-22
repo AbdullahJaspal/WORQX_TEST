@@ -16,7 +16,7 @@ const PaginationDots: React.FC<PaginationDotsProps> = ({
         const isActive = currentIndex >= index;
         const dotStyle = useAnimatedStyle(() => {
           return {
-            width: withSpring(isActive ? 25 : 25),
+            width: withSpring(25),
             backgroundColor: isActive ? color : '#D1D1D6',
           };
         }, [isActive]);

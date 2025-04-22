@@ -2,10 +2,6 @@ import { DELETE_ERROR } from '../utils/messages';
 import axiosInstance from './axiosInstance';
 
 
-
-
-
-
 export class ApiError extends Error {
   name: string;
   status: number;

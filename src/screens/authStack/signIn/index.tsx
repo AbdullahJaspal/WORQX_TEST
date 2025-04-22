@@ -1,13 +1,13 @@
-import {useState} from 'react';
+import { useState } from 'react';
 import styles from './styles';
-import {useDispatch} from 'react-redux';
-import {Keyboard, View} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {useTheme} from '../../../context/themeContext';
-import {login} from '../../../redux/features/authSlice';
-import {showToast} from '../../../redux/features/toastSlice';
-import {signinFormVaildate} from '../../../utils/validation';
-import {resendOtp, signin, verifyOtp} from '../../../api/authApi';
+import { useDispatch } from 'react-redux';
+import { Keyboard, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../../context/themeContext';
+import { login } from '../../../redux/features/authSlice';
+import { showToast } from '../../../redux/features/toastSlice';
+import { signinFormVaildate } from '../../../utils/validation';
+import { resendOtp, signin, verifyOtp } from '../../../api/authApi';
 import {
   Button,
   CountdownTimer,
@@ -15,19 +15,19 @@ import {
   InputField,
   Text,
 } from '../../../components';
-import {type AuthStackParamList, routes} from '../../../navigation/Routes';
+import { type AuthStackParamList, routes } from '../../../navigation/Routes';
 import VerificationInput from '../../../components/VerificationInput';
-import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type {
   ResendOtpRequest,
   SignInData,
   SignInRequest,
   VerifyOtpRequest,
 } from '../types';
-import {showLoader} from '../../../redux/features/loaderSlice';
+import { showLoader } from '../../../redux/features/loaderSlice';
 
 const SignIn = () => {
-  const {colors} = useTheme();
+  const { colors } = useTheme();
   const dispatch = useDispatch();
   const navigation =
     useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
@@ -41,7 +41,7 @@ const SignIn = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const updateFormData = (field: keyof SignInData, value: string) => {
-    setFormData(prev => ({...prev, [field]: value}));
+    setFormData(prev => ({ ...prev, [field]: value }));
     setErrors({});
   };
 
@@ -71,19 +71,19 @@ const SignIn = () => {
           const response = await signin(data);
           if (response?.success) {
             if (response?.token) {
-              dispatch(login({token: response.token}));
+              dispatch(login({ token: response.token }));
               dispatch(
-                showToast({message: 'Login successful!', type: 'success'}),
+                showToast({ message: 'Login successful!', type: 'success' }),
               );
               navigation.replace(routes.bottomTab);
             } else {
-              dispatch(showToast({message: response.message, type: 'success'}));
+              dispatch(showToast({ message: response.message, type: 'success' }));
               setStep('verification');
             }
           }
         } catch (error) {
           dispatch(
-            showToast({message: 'Something went wrong!', type: 'error'}),
+            showToast({ message: 'Something went wrong!', type: 'error' }),
           );
         } finally {
           dispatch(showLoader(false));
@@ -93,7 +93,7 @@ const SignIn = () => {
   };
   const handleVerifyOtp = async () => {
     if (!formData.emailVerification) {
-      setErrors(prev => ({...prev, emailVerification: 'Code is required'}));
+      setErrors(prev => ({ ...prev, emailVerification: 'Code is required' }));
       return;
     }
     dispatch(showLoader(true));
@@ -106,13 +106,13 @@ const SignIn = () => {
       };
       const response = await verifyOtp(data);
       if (response?.success) {
-        dispatch(login({token: response.token}));
+        dispatch(login({ token: response.token }));
 
-        dispatch(showToast({message: 'Login successful!', type: 'success'}));
+        dispatch(showToast({ message: 'Login successful!', type: 'success' }));
         navigation.replace(routes.bottomTab);
       }
     } catch (error) {
-      dispatch(showToast({message: 'Invalid OTP!', type: 'error'}));
+      dispatch(showToast({ message: 'Invalid OTP!', type: 'error' }));
     } finally {
       dispatch(showLoader(false));
     }
@@ -120,13 +120,13 @@ const SignIn = () => {
   const handleResendOtp = async () => {
     dispatch(showLoader(true));
     try {
-      const data: ResendOtpRequest = {email: formData.email, type: 'signIn'};
+      const data: ResendOtpRequest = { email: formData.email, type: 'signIn' };
       const response = await resendOtp(data);
       if (response?.success) {
-        dispatch(showToast({message: response?.message, type: 'success'}));
+        dispatch(showToast({ message: response?.message, type: 'success' }));
       }
     } catch (error) {
-      dispatch(showToast({message: 'Failed to resend OTP', type: 'error'}));
+      dispatch(showToast({ message: 'Failed to resend OTP', type: 'error' }));
     } finally {
       dispatch(showLoader(false));
     }
@@ -136,19 +136,19 @@ const SignIn = () => {
     step === 'verification'
       ? updateFormData('emailVerification', '')
       : navigation.goBack();
-    setStep(step === 'verification' ? 'initial' : 'initial');
+    setStep('initial');
   };
   return (
-    <View style={[styles.mainCont, {backgroundColor: colors.background}]}>
+    <View style={[styles.mainCont, { backgroundColor: colors.background }]}>
       <Header onPress={handlePressBack} auth />
 
       {step === 'initial' && (
-        <View style={{width: '85%', marginTop: 64}}>
+        <View style={{ width: '85%', marginTop: 64 }}>
           <Text textStyle="bold24">Sign In</Text>
           <Text
             textStyle="regular14"
             color={colors.textPrimary}
-            style={{marginTop: 12}}>
+            style={{ marginTop: 12 }}>
             Welcome back! Please enter your credentials.
           </Text>
           <InputField
@@ -167,15 +167,15 @@ const SignIn = () => {
             onChangeText={text => updateFormData('password', text)}
             error={errors.password}
             secureTextEntry
-            containerStyle={{marginTop: 15}}
+            containerStyle={{ marginTop: 15 }}
             isPassword
           />
         </View>
       )}
 
       {step === 'verification' && (
-        <View style={{marginTop: 64, width: '85%'}}>
-          <View style={{gap: 12, marginBottom: 20}}>
+        <View style={{ marginTop: 64, width: '85%' }}>
+          <View style={{ gap: 12, marginBottom: 20 }}>
             <Text textStyle="regular20">
               Please enter email verification code
             </Text>
@@ -206,13 +206,13 @@ const SignIn = () => {
           width={'100%'}
           onPress={handleContinue}
           disabled={Object.keys(errors).length > 0}
-          style={{marginTop: 72, marginBottom: 16}}
+          style={{ marginTop: 72, marginBottom: 16 }}
         />
         {step === 'initial' && (
           <Text
             textStyle="regular16"
             color={colors.textPrimary}
-            style={{textDecorationLine: 'underline'}}
+            style={{ textDecorationLine: 'underline' }}
             onPress={() => {
               navigation.navigate(routes.forgetpassword);
             }}>
@@ -230,13 +230,13 @@ const SignIn = () => {
         )}
         {step === 'initial' && (
           <Text
-            style={{marginVertical: 12}}
+            style={{ marginVertical: 12 }}
             textStyle="regular16"
             color={colors.textPrimary}>
             Already have an account?{' '}
             <Text
               textStyle="semibold16"
-              style={{textDecorationLine: 'underline'}}
+              style={{ textDecorationLine: 'underline' }}
               onPress={() => {
                 navigation.navigate(routes.signUp);
               }}>
