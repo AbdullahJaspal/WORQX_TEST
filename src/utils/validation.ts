@@ -12,50 +12,109 @@ interface FormData {
   numberVerification?: string;
 }
 
+const validateRequired = (value: string | undefined, fieldName: string): string | null => {
+  return !value ? `${fieldName} is required` : null;
+};
+
+const validateEmail = (email: string): string | null => {
+  return !/\S+@\S+\.\S+/.test(email) ? 'Invalid email address' : null;
+};
+
+const validateEmailOrPhone = (value: string): string | null => {
+  if (/\S+@\S+\.\S+/.test(value) || /^\+?\d{10,15}$/.test(value)) {
+    return null;
+  }
+  return 'Enter a valid email or phone number';
+};
+
+const validateVerificationCode = (code: string | undefined): string | null => {
+  if (!code) {
+    return 'Verification code is required';
+  }
+  if (code.length < 6) {
+    return 'Wrong Code, Try Again';
+  }
+  return null;
+};
+
+const validatePassword = (password: string | undefined, confirmPassword?: string): Record<string, string> => {
+  const errors: Record<string, string> = {};
+
+  if (!password) {
+    errors.password = 'Password is required';
+    return errors;
+  }
+
+  if (confirmPassword === undefined && password.length < 10) {
+    errors.password = 'Password must be at least 10 characters';
+    return errors;
+  }
+
+  if (confirmPassword !== undefined) {
+    const hasErrors =
+      password.length < 10 ||
+      !/[A-Z]/.test(password) ||
+      !/[0-9]/.test(password) ||
+      !/[@#$%]/.test(password);
+
+    if (hasErrors) {
+      errors.password = '';
+    }
+
+    if (password !== confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
+    }
+  }
+
+  return errors;
+};
+
 export const signupFormValidate = (formData: FormData, currentStep: number) => {
   const errors: Record<string, string> = {};
 
   switch (currentStep) {
     case 0:
-      if (!formData.firstName) errors.firstName = 'First name is required';
-      if (!formData.lastName) errors.lastName = 'Last name is required';
+      const firstNameError = validateRequired(formData.firstName, 'First name');
+      if (firstNameError) errors.firstName = firstNameError;
+
+      const lastNameError = validateRequired(formData.lastName, 'Last name');
+      if (lastNameError) errors.lastName = lastNameError;
       break;
+
     case 1:
-      if (!formData.email) errors.email = 'Email is required';
-      else if (!/\S+@\S+\.\S+/.test(formData.email))
-        errors.email = 'Invalid email address';
+      const emailRequiredError = validateRequired(formData.email, 'Email');
+      if (emailRequiredError) {
+        errors.email = emailRequiredError;
+      } else {
+        const emailFormatError = validateEmail(formData.email);
+        if (emailFormatError) errors.email = emailFormatError;
+      }
       break;
+
     case 2:
-      if (!formData.emailVerification) {
-        errors.emailVerification = 'Verification code is required';
-      } else if (
-        formData.emailVerification &&
-        formData.emailVerification?.length < 6
-      ) {
-        errors.emailVerification = 'Wrong Code, Try Again';
-      }
+      const emailVerificationError = validateVerificationCode(formData.emailVerification);
+      if (emailVerificationError) errors.emailVerification = emailVerificationError;
       break;
+
     case 3:
-      if (!formData.phone) errors.phone = 'Phone number is required';
+      const phoneError = validateRequired(formData.phone, 'Phone number');
+      if (phoneError) errors.phone = phoneError;
       break;
+
     case 4:
-      if (!formData.numberVerification) {
-        errors.numberVerification = 'Verification code is required';
-      } else if (
-        formData.numberVerification &&
-        formData.numberVerification?.length < 6
-      ) {
-        errors.numberVerification = 'Wrong Code, Try Again';
-      }
+      const numberVerificationError = validateVerificationCode(formData.numberVerification);
+      if (numberVerificationError) errors.numberVerification = numberVerificationError;
       break;
+
     case 5:
-      if (!formData.password) errors.password = 'Password is required';
-      if (formData.password !== formData.confirmPassword)
-        errors.confirmPassword = 'Passwords do not match';
+      const passwordErrors = validatePassword(formData.password, formData.confirmPassword);
+      Object.assign(errors, passwordErrors);
       break;
+
     default:
       break;
   }
+
   return errors;
 };
 
@@ -63,46 +122,19 @@ export const forgetFormValidate = (formData: FormData, step: string) => {
   const errors: Record<string, string> = {};
 
   if (step === 'initial') {
-    if (!formData.email) {
-      errors.email = 'Email or phone number is required';
+    const emailRequiredError = validateRequired(formData.email, 'Email or phone number');
+    if (emailRequiredError) {
+      errors.email = emailRequiredError;
     } else {
-      if (/\S+@\S+\.\S+/.test(formData.email)) {
-        // Valid email
-      } else if (/^\+?\d{10,15}$/.test(formData.email)) {
-        // Valid phone number
-      } else {
-        errors.email = 'Enter a valid email or phone number';
-      }
+      const emailOrPhoneError = validateEmailOrPhone(formData.email);
+      if (emailOrPhoneError) errors.email = emailOrPhoneError;
     }
   } else if (step === 'verification') {
-    if (!formData.emailVerification) {
-      errors.emailVerification = 'Verification code is required';
-    } else if (
-      formData.emailVerification &&
-      formData.emailVerification?.length < 6
-    ) {
-      errors.emailVerification = 'Wrong Code, Try Again';
-    }
+    const verificationError = validateVerificationCode(formData.emailVerification);
+    if (verificationError) errors.emailVerification = verificationError;
   } else if (step === 'createPassword') {
-    if (!formData.password) {
-      errors.password = 'Password is required';
-    } else {
-      if (formData.password.length < 10) {
-        errors.password = '';
-      }
-      if (!/[A-Z]/.test(formData.password)) {
-        errors.password = '';
-      }
-      if (!/[0-9]/.test(formData.password)) {
-        errors.password = '';
-      }
-      if (!/[@#$%]/.test(formData.password)) {
-        errors.password = '';
-      }
-    }
-    if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match';
-    }
+    const passwordErrors = validatePassword(formData.password, formData.confirmPassword);
+    Object.assign(errors, passwordErrors);
   }
 
   return errors;
@@ -112,49 +144,25 @@ export const signinFormVaildate = (formData: FormData, step: string) => {
   const errors: Record<string, string> = {};
 
   if (step === 'initial') {
-    if (!formData.email) {
-      errors.email = 'Email or phone number is required';
+    const emailRequiredError = validateRequired(formData.email, 'Email or phone number');
+    if (emailRequiredError) {
+      errors.email = emailRequiredError;
     } else {
-      if (/\S+@\S+\.\S+/.test(formData.email)) {
-      } else if (/^\+?\d{10,15}$/.test(formData.email)) {
-      } else {
-        errors.email = 'Enter a valid email or phone number';
-      }
+      const emailOrPhoneError = validateEmailOrPhone(formData.email);
+      if (emailOrPhoneError) errors.email = emailOrPhoneError;
     }
+
     if (!formData.password) {
       errors.password = 'Password is required';
     } else if (formData.password.length < 10) {
       errors.password = 'Password must be at least 10 characters';
     }
   } else if (step === 'verification') {
-    if (!formData.emailVerification) {
-      errors.emailVerification = 'Verification code is required';
-    } else if (
-      formData.emailVerification &&
-      formData.emailVerification?.length < 6
-    ) {
-      errors.emailVerification = 'Wrong Code, Try Again';
-    }
+    const verificationError = validateVerificationCode(formData.emailVerification);
+    if (verificationError) errors.emailVerification = verificationError;
   } else if (step === 'createPassword') {
-    if (!formData.password) {
-      errors.password = 'Password is required';
-    } else {
-      if (formData.password.length < 10) {
-        errors.password = '';
-      }
-      if (!/[A-Z]/.test(formData.password)) {
-        errors.password = '';
-      }
-      if (!/[0-9]/.test(formData.password)) {
-        errors.password = '';
-      }
-      if (!/[@#$%]/.test(formData.password)) {
-        errors.password = '';
-      }
-    }
-    if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match';
-    }
+    const passwordErrors = validatePassword(formData.password, formData.confirmPassword);
+    Object.assign(errors, passwordErrors);
   }
 
   return errors;
